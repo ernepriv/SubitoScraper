@@ -1,5 +1,5 @@
 import streamlit as st
-from selenium import webdriver
+from seleniumwire import webdriver  # Importa webdriver da seleniumwire invece che da selenium
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
@@ -80,13 +80,14 @@ def get_driver_path():
     """Installa e restituisce il percorso del ChromeDriver."""
     return ChromeDriverManager().install()
 
-def get_selenium_driver(user_agent=None, disable_headless=False):
+def get_selenium_driver(user_agent=None, disable_headless=False, proxy=None):
     """
-    Inizializza e restituisce un driver Selenium configurato per apparire più umano.
+    Inizializza e restituisce un driver Selenium Wire configurato per apparire più umano.
     
     Args:
         user_agent: User agent personalizzato da utilizzare
         disable_headless: Se True, disabilita la modalità headless (mostra il browser)
+        proxy: Proxy da utilizzare (formato: 'http://user:pass@host:port')
     """
     try:
         chrome_options = Options()
@@ -118,11 +119,23 @@ def get_selenium_driver(user_agent=None, disable_headless=False):
         # Accetta i cookie
         chrome_options.add_argument("--enable-cookies")
         
+        # Configurazione di Selenium Wire
+        seleniumwire_options = {}
+        
+        # Configura il proxy se specificato
+        if proxy:
+            seleniumwire_options['proxy'] = {
+                'http': proxy,
+                'https': proxy,
+                'no_proxy': 'localhost,127.0.0.1'
+            }
+        
         # Usa il percorso del driver memorizzato nella cache
         driver_path = get_driver_path()
         driver = webdriver.Chrome(
             service=Service(driver_path),
-            options=chrome_options
+            options=chrome_options,
+            seleniumwire_options=seleniumwire_options
         )
         
         # Modifica il navigator.webdriver per rendere più difficile il rilevamento
@@ -130,7 +143,7 @@ def get_selenium_driver(user_agent=None, disable_headless=False):
         
         return driver
     except Exception as e:
-        st.error(f"Errore nell'inizializzazione del driver Selenium: {e}")
+        st.error(f"Errore nell'inizializzazione del driver Selenium Wire: {e}")
         return None
 
 
